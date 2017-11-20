@@ -20,7 +20,6 @@ LINE = sys.argv[2]
 SERVER = LINE.split('@')[1].split(':')[0]
 PORT = int(LINE.split('@')[1].split(':')[1])
 method = sys.argv[1]
-    
 
 # Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
@@ -33,11 +32,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
 
     if method == "BYE":
         my_socket.send(bytes('BYE sip:'+LINE+' SIP/2.0\r\n', 'utf-8') + 
-                             b'\r\n')
-
+                             b'\r\n')        
     data = my_socket.recv(1024)
 
     print('Recibido -- ', data.decode('utf-8'))
+    message_recivied = data.decode('utf-8').split(' ')
+    for elementos in message_recivied:
+        if elementos == '200':
+            my_socket.send(bytes('ACK sip:'+LINE.split(':')[0]+
+                                 ' SIP/2.0\r\n', 'utf-8') + b'\r\n')
     print("Terminando socket...")
 
 print("Fin.")
