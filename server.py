@@ -13,7 +13,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
     """
     Echo server class
     """
-    def error(self,line):
+    def error(self, line):
         line_errores = line.split(' ')
         fail = False
         if len(line_errores) != 3:
@@ -28,7 +28,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
             fail = True
         return fail
 
-    def handle(self):       
+    def handle(self):
         # Escribe dirección y puerto del cliente (de tupla client_address)
 
         while 1:
@@ -47,8 +47,8 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 self.wfile.write(b"SIP/2.0 400 Bad Request \r\n\r\n")
 
             elif method == lista[0]:
-                self.wfile.write(b"SIP/2.0 100 Trying \r\n\r\n"+
-                                 b"SIP/2.0 180 Ringing \r\n\r\n"+
+                self.wfile.write(b"SIP/2.0 100 Trying \r\n\r\n" +
+                                 b"SIP/2.0 180 Ringing \r\n\r\n" +
                                  b"SIP/2.0 200 OK \r\n\r\n")
 
             elif method == lista[1]:
@@ -60,11 +60,15 @@ class EchoHandler(socketserver.DatagramRequestHandler):
                 self.wfile.write(b"SIP/2.0 200 OK \r\n\r\n")
 
 if __name__ == "__main__":
-    #Falta comprobar que existe el audio_file con os.path(?)
+    IP = sys.argv[1]
+    PORT = int(sys.argv[2])
+    ARCHIVO = sys.argv[3]
     if len(sys.argv) < 3:
         print("Usage: python3 server.py IP port audio_file")
+    if not os.path.exists(sys.argv[3]):
+        sys.exit("El archivo de audio no existe")
     # Creamos servidor de eco y escuchamos
-    serv = socketserver.UDPServer(('', 6001), EchoHandler)
+    serv = socketserver.UDPServer((IP, PORT), EchoHandler)
     print("Listening...")
     try:
         serv.serve_forever()
