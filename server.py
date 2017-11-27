@@ -13,23 +13,24 @@ class EchoHandler(socketserver.DatagramRequestHandler):
     """
     Echo server class
     """
-    def error(line):
+    def error(self,line):
         line_errores = line.split(' ')
+        fail = False
         if len(line_errores) != 3:
-            fallo = True
-        if line_errores[0] != 'sip':
-            fallo = True
+            fail = True
+        if line_errores[1][0:4] != 'sip:':
+            fail = True
         if line_errores[1].find('@') == -1:
-            fallo = True
+            fail = True
         if line_errores[1].find(':') == -1:
-            fallo = True
+            fail = True
         if line_errores[2] != 'SIP/2.0\r\n\r\n':
-            fallo = True
-        return fallo
+            fail = True
+        return fail
 
     def handle(self):       
         # Escribe dirección y puerto del cliente (de tupla client_address)
-        self.wfile.write(b"Hemos recibido tu peticion \r\n")
+
         while 1:
             # Leyendo línea a línea lo que nos envía el cliente
             line = self.rfile.read()
@@ -38,22 +39,25 @@ class EchoHandler(socketserver.DatagramRequestHandler):
             method = ((line.decode('utf-8')).split(' ')[0])
             if not line:
                 break
-            if :
+
+            if method not in lista:
+                self.wfile.write(b"SIP/2.0 405 Method Not Allowed \r\n\r\n")
+
+            elif self.error(line.decode('utf-8')):
                 self.wfile.write(b"SIP/2.0 400 Bad Request \r\n\r\n")
-            if method == lista[0]:
+
+            elif method == lista[0]:
                 self.wfile.write(b"SIP/2.0 100 Trying \r\n\r\n"+
                                  b"SIP/2.0 180 Ringing \r\n\r\n"+
                                  b"SIP/2.0 200 OK \r\n\r\n")
-            #envía canción
+
             elif method == lista[1]:
                 aEjecutar = 'mp32rtp -i 127.0.0.1 -p 23032 < ' + sys.argv[3]
                 print("Vamos a ejecutar", aEjecutar)
                 os.system(aEjecutar)
+
             elif method == lista[2]:
                 self.wfile.write(b"SIP/2.0 200 OK \r\n\r\n")
-            elif method not in lista:
-                self.wfile.write(b"SIP/2.0 405 Method Not Allowed \r\n\r\n")
-            # Si no hay más líneas salimos del bucle infinito
 
 if __name__ == "__main__":
     #Falta comprobar que existe el audio_file con os.path(?)
@@ -62,4 +66,7 @@ if __name__ == "__main__":
     # Creamos servidor de eco y escuchamos
     serv = socketserver.UDPServer(('', 6001), EchoHandler)
     print("Listening...")
-    serv.serve_forever()
+    try:
+        serv.serve_forever()
+    except KeyboardInterrupt:
+        print('Server Cancelled')
