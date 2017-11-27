@@ -13,32 +13,31 @@ class EchoHandler(socketserver.DatagramRequestHandler):
     Echo server class
     """
 #Quitar el while y pasar la línea a lista con split
-    def handle(self):
-        lista = ['INVITE', 'ACK', 'BYE']        
+    def handle(self):       
         # Escribe dirección y puerto del cliente (de tupla client_address)
         self.wfile.write(b"Hemos recibido tu peticion \r\n")
         while 1:
             # Leyendo línea a línea lo que nos envía el cliente
             line = self.rfile.read()
+            lista = ['INVITE', 'ACK', 'BYE']
+            print('El cliente envía:' + line.decode('utf-8'))
             method = ((line.decode('utf-8')).split(' ')[0])
-            print(line.decode('utf-8'))
-
-            if method == 'INVITE':
+            if not line:
+                break
+            if method == lista[0]:
                 self.wfile.write(b"SIP/2.0 100 Trying \r\n"+
                                   b"SIP/2.0 180 Ringing \r\n"+
                                   b"SIP/2.0 200 OK \r\n")
             #envía canción
-            elif method == 'ACK':
+            elif method == lista[1]:
                 pass
-            elif method == 'BYE':
+            elif method == lista[2]:
                 elf.wfile.write(b"SIP/2.0 200 OK \r\n")
-            if method in self.lista != 'INVITE' or method != 'ACK' or method != 'BYE':
-                self.wfile.write(b"SIP/2.0 400 Bad Request \r\n")
-            else:
+            elif method not in lista:
                 self.wfile.write(b"SIP/2.0 405 Method Not Allowed \r\n")
+            else:
+                self.wfile.write(b"SIP/2.0 400 Bad Request \r\n")
             # Si no hay más líneas salimos del bucle infinito
-            if not line:
-                break
 
 if __name__ == "__main__":
     #Falta comprobar que existe el audio_file con os.path(?)
